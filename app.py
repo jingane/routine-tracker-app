@@ -1,6 +1,8 @@
 import streamlit as st
+import json
 from datetime import datetime, timedelta
 import time
+import os
 
 # 페이지 제목 및 설명을 HTML과 CSS로 스타일링
 st.markdown("""
@@ -19,9 +21,27 @@ st.markdown("""
     <p class="subtitle">하루 1시간 루틴을 만들어 내 빈 시간을 꽉 채워볼까요~</p>
 """, unsafe_allow_html=True)
 
+# 파일 경로 설정
+data_file = "routines.json"
+
+# 데이터 파일이 존재하는지 확인 후 초기화
+if not os.path.exists(data_file):
+    with open(data_file, 'w') as f:
+        json.dump([], f)
+
+# 데이터 로드 함수
+def load_data():
+    with open(data_file, 'r') as f:
+        return json.load(f)
+
+# 데이터 저장 함수
+def save_data(data):
+    with open(data_file, 'w') as f:
+        json.dump(data, f)
+
 # 루틴 기록을 위한 데이터 초기화
 if 'routines' not in st.session_state:
-    st.session_state.routines = []
+    st.session_state.routines = load_data()
 
 # 새로운 루틴 입력
 routine = st.text_input('새 루틴을 입력하세요:')
@@ -30,6 +50,7 @@ if st.button('시작'):
     if routine and routine not in [r['routine'] for r in st.session_state.routines]:
         end_time = datetime.now() + timedelta(hours=1)
         st.session_state.routines.append({'routine': routine, 'end_time': end_time})
+        save_data(st.session_state.routines)  # 데이터 저장
         st.success(f"'{routine}' 루틴이 시작되었습니다!")
     elif routine in [r['routine'] for r in st.session_state.routines]:
         st.warning("이미 진행 중인 루틴입니다.")
@@ -48,6 +69,7 @@ for r in st.session_state.routines:
 
         # 완료된 루틴 삭제
         st.session_state.routines.remove(r)
+        save_data(st.session_state.routines)  # 완료된 데이터 저장
 
 # 새로운 날에 다시 시작할 수 있는 버튼 추가
 st.write("## 다시 시작 가능한 루틴:")
@@ -55,11 +77,12 @@ for r in st.session_state.routines:
     if r['end_time'] <= current_time:
         if st.button(f"{r['routine']} 다시 시작"):
             end_time = datetime.now() + timedelta(hours=1)
-            st.session_state.routines.append({'routine': r['routine'], 'end_time': end_time})
+            r['end_time'] = end_time
+            save_data(st.session_state.routines)  # 데이터 업데이트
             st.success(f"'{r['routine']}' 루틴이 다시 시작되었습니다!")
             st.experimental_rerun()
 
-# 루틴 타이머 업데이트
+# 루틴 타이머 업데이트 (실시간 업데이트는 Streamlit에서는 고급 기능이므로 대화형 애플리케이션으로 개발할 때 유용합니다)
 for r in st.session_state.routines:
     if r['end_time'] > current_time:
         timer_placeholder = st.empty()
