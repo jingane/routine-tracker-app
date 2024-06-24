@@ -32,12 +32,24 @@ if not os.path.exists(data_file):
 # 데이터 로드 함수
 def load_data():
     with open(data_file, 'r') as f:
-        return json.load(f)
+        data = json.load(f)
+        # JSON에서 datetime 문자열을 datetime 객체로 변환
+        for r in data:
+            r['end_time'] = datetime.fromisoformat(r['end_time'])
+        return data
 
 # 데이터 저장 함수
 def save_data(data):
+    # datetime 객체를 문자열로 변환하여 저장
+    data_to_save = []
+    for r in data:
+        data_to_save.append({
+            'routine': r['routine'],
+            'end_time': r['end_time'].isoformat()  # datetime 객체를 ISO 포맷 문자열로 변환
+        })
+    
     with open(data_file, 'w') as f:
-        json.dump(data, f)
+        json.dump(data_to_save, f, default=str)  # default=str을 사용하여 datetime을 문자열로 변환
 
 # 루틴 기록을 위한 데이터 초기화
 if 'routines' not in st.session_state:
