@@ -1,44 +1,55 @@
 import streamlit as st
+import json
+import time
 from datetime import datetime, timedelta
 
-# 페이지 제목 설정
-st.title('루틴 늘리기 앱')
+# 데이터 로드
+def load_data():
+    try:
+        with open('routines.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
 
-# 루틴 입력 받기
-new_routine = st.text_input('새로운 루틴을 입력하세요.')
+# 데이터 저장
+def save_data(data):
+    with open('routines.json', 'w') as file:
+        json.dump(data, file)
 
-# 저장된 루틴들 표시
-st.write('### 저장된 루틴')
-saved_routines = st.text_area('저장된 루틴 목록', height=200)
-if saved_routines:
-    saved_routines_list = saved_routines.split('\n')
-else:
-    saved_routines_list = []
+# 시간 포맷 변환
+def format_time(seconds):
+    return str(timedelta(seconds=seconds))
 
-# 새로운 루틴 추가
-if new_routine:
-    saved_routines_list.append(new_routine)
-    st.text_area('저장된 루틴 목록', '\n'.join(saved_routines_list), height=200)
+st.title("루틴 늘리기 앱")
 
-# 시간 업데이트 함수
-def update_time():
-    return (datetime.now() + timedelta(hours=1)).strftime('%H:%M:%S')
+routines = load_data()
 
-# 타이머
-st.write('### 루틴 타이머')
-time_remaining = st.empty()
-while True:
-    current_time = update_time()
-    time_remaining.text(f'남은 시간: {current_time}')
-    if current_time == '00:00:00':
-        break
+# 루틴 입력 섹션
+new_routine = st.text_input("새 루틴 추가")
+if st.button("루틴 시작"):
+    if new_routine:
+        routines.append({"name": new_routine, "start_time": datetime.now().isoformat(), "completed": False})
+        save_data(routines)
+        st.experimental_rerun()
 
-# 완료 메시지
-st.write('### 루틴 완료!')
-st.write('루틴을 성공적으로 완료했습니다.')
+# 루틴 리스트
+st.header("현재 루틴")
+for routine in routines:
+    start_time = datetime.fromisoformat(routine["start_time"])
+    time_elapsed = (datetime.now() - start_time).total_seconds()
+    time_remaining = max(0, 3600 - time_elapsed)
+    
+    if time_remaining > 0:
+        st.write(f"루틴: {routine['name']}")
+        st.write(f"남은 시간: {format_time(time_remaining)}")
+    else:
+        routine["completed"] = True
 
-# 하단의 빈칸
-st.write('### 새로운 루틴 추가하기')
-new_routine_text = st.text_input('새로운 루틴을 추가하세요.')
+# 완료된 루틴
+st.header("완료된 루틴")
+for routine in routines:
+    if routine["completed"]:
+        st.write(f"루틴: {routine['name']} 완료")
 
-# 앱의 자동 저장 기능을 구현해야 함
+# 데이터 저장
+save_data(routines)
