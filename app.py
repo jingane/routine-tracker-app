@@ -2,7 +2,6 @@ import streamlit as st
 import json
 import time
 from datetime import datetime, timedelta
-import threading
 
 # 데이터 로드
 def load_data():
@@ -21,47 +20,38 @@ def save_data(data):
 def format_time(seconds):
     return str(timedelta(seconds=seconds))
 
-# 타이머 업데이트 함수
-def update_timer(routine, placeholder):
-    while routine["time_remaining"] > 0:
-        time_remaining = routine["time_remaining"]
-        placeholder.text(f"남은 시간: {format_time(int(time_remaining))}")
-        time.sleep(1)
-        routine["time_remaining"] -= 1
-    routine["completed"] = True
-    placeholder.text(f"루틴: {routine['name']} 완료")
-    save_data(st.session_state.routines)
-
-st.title("루틴 늘리기 앱")
-
 # 세션 상태 초기화
 if "routines" not in st.session_state:
     st.session_state.routines = load_data()
+
+st.title("루틴 늘리기 앱")
 
 # 루틴 입력 섹션
 new_routine = st.text_input("새 루틴 추가")
 if st.button("루틴 시작"):
     if new_routine:
-        st.session_state.routines.append({"name": new_routine, "start_time": datetime.now().isoformat(), "time_remaining": 3600, "completed": False})
+        st.session_state.routines.append({"name": new_routine, "start_time": datetime.now().isoformat(), "completed": False})
         save_data(st.session_state.routines)
         st.experimental_rerun()
 
 # 루틴 리스트
 st.header("현재 루틴")
 for routine in st.session_state.routines:
-    if not routine["completed"]:
-        start_time = datetime.fromisoformat(routine["start_time"])
-        time_elapsed = (datetime.now() - start_time).total_seconds()
-        routine["time_remaining"] = max(0, 3600 - time_elapsed)
+    start_time = datetime.fromisoformat(routine["start_time"])
+    time_elapsed = (datetime.now() - start_time).total_seconds()
+    time_remaining = max(0, 3600 - time_elapsed)
+    
+    if time_remaining > 0:
+        st.write(f"루틴: {routine['name']}")
+        timer_placeholder = st.empty()
 
-        if routine["time_remaining"] > 0:
-            st.write(f"루틴: {routine['name']}")
-            timer_placeholder = st.empty()
-            # 타이머 업데이트 스레드 시작
-            timer_thread = threading.Thread(target=update_timer, args=(routine, timer_placeholder))
-            timer_thread.start()
-        else:
-            routine["completed"] = True
+        while time_remaining > 0:
+            time_remaining = max(0, 3600 - (datetime.now() - start_time).total_seconds())
+            timer_placeholder.text(f"남은 시간: {format_time(int(time_remaining))}")
+            time.sleep(1)
+        routine["completed"] = True
+    else:
+        routine["completed"] = True
 
 # 완료된 루틴
 st.header("완료된 루틴")
