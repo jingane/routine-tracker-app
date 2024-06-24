@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-import time
 from datetime import datetime, timedelta
 
 # 데이터 로드
@@ -41,29 +40,38 @@ for routine in st.session_state.routines:
     time_elapsed = (datetime.now() - start_time).total_seconds()
     time_remaining = max(0, 3600 - time_elapsed)
 
-    if time_remaining > 0:
+    col1, col2, col3 = st.columns([4, 2, 2])
+    with col1:
         st.write(f"루틴: {routine['name']}")
-        timer_placeholder = st.empty()
-
-        # 타이머 업데이트
-        while time_remaining > 0:
-            time_remaining = max(0, 3600 - (datetime.now() - start_time).total_seconds())
-            timer_placeholder.text(f"남은 시간: {format_time(int(time_remaining))}")
-            time.sleep(1)
-    else:
-        routine["completed"] = True
+    with col2:
+        if time_remaining > 0:
+            st.write(f"남은 시간: {format_time(int(time_remaining))}")
+        else:
+            routine["completed"] = True
+            st.write("완료됨")
+    with col3:
+        if st.button("삭제", key=routine["name"] + "_delete"):
+            st.session_state.routines.remove(routine)
+            save_data(st.session_state.routines)
+            st.experimental_rerun()
 
 # 완료된 루틴
 st.header("완료된 루틴")
 for routine in st.session_state.routines:
     if routine["completed"]:
-        if st.button(f"루틴: {routine['name']} 다시 시작"):
-            routine["start_time"] = datetime.now().isoformat()
-            routine["completed"] = False
-            save_data(st.session_state.routines)
-            st.experimental_rerun()
-        else:
-            st.write(f"루틴: {routine['name']} 완료")
+        col1, col2 = st.columns([6, 2])
+        with col1:
+            if st.button(f"루틴: {routine['name']} 다시 시작"):
+                routine["start_time"] = datetime.now().isoformat()
+                routine["completed"] = False
+                save_data(st.session_state.routines)
+                st.experimental_rerun()
+        with col2:
+            if st.button("삭제", key=routine["name"] + "_completed_delete"):
+                st.session_state.routines.remove(routine)
+                save_data(st.session_state.routines)
+                st.experimental_rerun()
+        st.write(f"루틴: {routine['name']} 완료")
 
 # 데이터 저장
 save_data(st.session_state.routines)
