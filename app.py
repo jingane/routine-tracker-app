@@ -1,12 +1,6 @@
 import streamlit as st
 import time
 
-def display_time(seconds):
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    return f"{hours:02}:{minutes:02}:{seconds:02}"
-
 def countdown_timer(seconds):
     while seconds:
         mins, secs = divmod(seconds, 60)
@@ -22,7 +16,6 @@ routine = st.text_input('하나의 루틴을 적어주세요.')
 
 if st.button('시작'):
     st.write(f'루틴 "{routine}" 시작!')
-    st.header("1:00")
     countdown_timer(3600)  # 1 hour countdown
 
 st.sidebar.subheader('저장된 루틴')
@@ -40,4 +33,3 @@ if new_routine:
 st.sidebar.write('선택된 루틴:')
 for routine in selected_routines:
     st.sidebar.write(f'- {routine}')
-
