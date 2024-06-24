@@ -86,7 +86,7 @@ for r in st.session_state.routines:
         save_data(st.session_state.routines)  # 완료된 데이터 저장
 
 # 새로운 날에 다시 시작할 수 있는 버튼 추가
-st.write("## 루틴 남은 시간 및 재시작:")
+st.write("## 타이머 / 재시작:")
 for r in st.session_state.routines:
     if r['end_time'] <= current_time:
         if st.button(f"{r['routine']} 다시 시작"):
