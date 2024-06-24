@@ -85,6 +85,11 @@ else:
         for r in session_data:
             remaining_time = r['end_time'] - current_time
             if remaining_time.total_seconds() > 0:
-                st.write(f"현재 {r['routine']} 진행 중 - 남은 시간: {str(remaining_time).split('.')[0]}", key=r['routine'])
+                st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}", key=r['routine'])
             else:
                 st.write(f"{r['routine']} - 완료")
+        
+        # 실시간으로 시간 업데이트
+        st.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        time.sleep(1)
+        st.experimental_rerun()
