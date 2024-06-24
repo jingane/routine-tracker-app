@@ -74,12 +74,12 @@ for r in st.session_state.routines:
     remaining_time = r['end_time'] - current_time
     if remaining_time.total_seconds() > 0:
          루틴과 함께 삭제 링크 추가
-       if st.button(f"삭제 {r['routine']}"):
-          st.session_state.routines.remove(r)
-            save_data(st.session_state.routines)  # 데이터 저장
-            st.experimental_rerun()  # 삭제 후 애플리케이션 다시 실행
+     #  if st.button(f"삭제 {r['routine']}"):
+      #    st.session_state.routines.remove(r)
+     #       save_data(st.session_state.routines)  # 데이터 저장
+     #       st.experimental_rerun()  # 삭제 후 애플리케이션 다시 실행
         else:
-         #   st.write(f"{r['routine']} [<a href='#' onclick='deleteRoutine(\"{r['routine']}\")'>삭제</a>]", unsafe_allow_html=True)
+           st.write(f"{r['routine']} [<a href='#' onclick='deleteRoutine(\"{r['routine']}\")'>삭제</a>]", unsafe_allow_html=True)
     else:
         # 남은 시간이 없는 경우에는 삭제 처리
         st.session_state.routines.remove(r)
