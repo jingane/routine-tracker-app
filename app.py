@@ -34,29 +34,6 @@ for r in st.session_state.routines:
         if r['routine'] not in st.session_state.checklist:
             st.session_state.checklist.append(r['routine'])
 
-# 완료된 루틴 표시
-st.write("## 완료된 루틴:")
-for r in st.session_state.routines:
-    if r['end_time'] <= current_time:
-        st.write(f"{r['routine']} - 완료")
-
-# 체크리스트 표시
-st.write("## 체크리스트:")
-for item in st.session_state.checklist:
-    st.write(f"- {item}")
-
-# 새로운 루틴 추가 입력
-new_routine = st.text_input('새로운 루틴을 추가하세요:', key='new_routine')
-
-if st.button('추가'):
-    if new_routine and new_routine not in st.session_state.checklist:
-        st.session_state.checklist.append(new_routine)
-        st.success(f"'{new_routine}' 루틴이 체크리스트에 추가되었습니다!")
-    elif new_routine in st.session_state.checklist:
-        st.warning("이미 체크리스트에 있는 루틴입니다.")
-    else:
-        st.warning("루틴을 입력하세요.")
-
 # 새로운 날에 다시 시작할 수 있는 버튼 추가
 st.write("## 다시 시작 가능한 루틴:")
 for r in st.session_state.routines:
@@ -66,6 +43,11 @@ for r in st.session_state.routines:
             st.session_state.routines.append({'routine': r['routine'], 'end_time': end_time})
             st.success(f"'{r['routine']}' 루틴이 다시 시작되었습니다!")
             st.experimental_rerun()
+
+# 체크리스트 표시
+st.write("## 체크리스트:")
+for item in st.session_state.checklist:
+    st.write(f"- {item}")
 
 # 루틴 타이머 업데이트
 for r in st.session_state.routines:
