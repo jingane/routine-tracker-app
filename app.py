@@ -1,91 +1,46 @@
-# app.py
-
 import streamlit as st
-import datetime
+from datetime import datetime, timedelta
 
-# 루틴 완료 기록을 저장할 리스트
-completed_routines = []
-
-# CSS 스타일 정의
-css = """
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    padding: 20px;
-}
-.container {
-    max-width: 800px;
-    margin: auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
-}
-.button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin-top: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.input-box {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-.checklist {
-    margin-top: 20px;
-}
-</style>
-"""
-
-# 페이지 레이아웃 설정
-st.markdown(css, unsafe_allow_html=True)
+# Page title and description
 st.title('루틴늘리기 앱')
-st.markdown('<div class="container">', unsafe_allow_html=True)
+st.write('하나의 루틴을 적고 시작을 누르면 1시간 후에 끝나는 타이머입니다.')
 
-# 새로운 루틴 입력 박스
-new_routine = st.text_input('새로운 루틴 입력', value='', max_chars=50, key='new_routine')
+# Sidebar에 있는 루틴 입력 기능
+new_routine = st.text_input('새로운 루틴 추가하기')
 
-# 새로운 루틴 추가 버튼
-if st.button('루틴 추가', key='add_routine'):
-    if new_routine:
-        st.markdown(f'<p>새로운 루틴 추가됨: {new_routine}</p>', unsafe_allow_html=True)
+# 저장된 루틴을 불러오기 위한 리스트
+routine_list = st.sidebar.empty()
+existing_routines = routine_list.multiselect('기존 루틴', ['운동하기', '공부하기', '독서하기'])
 
-# 루틴 완료 버튼
-if st.button('시작', key='start_routine'):
-    start_time = datetime.datetime.now()
-    end_time = start_time + datetime.timedelta(hours=1)
-    st.markdown(f'<p>루틴 시작됨: {start_time.strftime("%H:%M")} 에 시작, {end_time.strftime("%H:%M")} 에 종료 예정</p>', unsafe_allow_html=True)
+# 타이머
+start_time = st.empty()
+end_time = st.empty()
+progress_bar = st.empty()
 
-    # 1시간 후에 완료된 루틴 기록
-    completed_routines.append(new_routine)
-    st.markdown('<p><strong>완료된 루틴:</strong></p>', unsafe_allow_html=True)
-    st.markdown('<ul>', unsafe_allow_html=True)
-    for routine in completed_routines:
-        st.markdown(f'<li>{routine}</li>', unsafe_allow_html=True)
-    st.markdown('</ul>', unsafe_allow_html=True)
+start_button = st.button('시작')
 
-# 체크리스트
-st.markdown('<div class="checklist">', unsafe_allow_html=True)
-st.subheader('매일 잘하고 있는지 체크')
-for routine in completed_routines:
-    st.markdown(f'<p>- {routine}</p>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+if start_button:
+    start_time.markdown(f'**시작 시간:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    duration = timedelta(hours=1)
+    end_time.markdown(f'**예상 종료 시간:** {datetime.now() + duration}')
 
-st.markdown('</div>', unsafe_allow_html=True)
+    while duration.total_seconds() > 0:
+        progress_bar.progress(100 - int((duration.total_seconds() / 3600) * 100))
+        duration = duration - timedelta(seconds=1)
+
+    st.write('루틴 완료!')
+
+# 매일 잘하고 있는지 체크리스트
+st.subheader('매일 잘하고 있는지 체크리스트')
+if st.checkbox('오늘의 루틴을 완료했나요?'):
+    st.write('축하합니다! 오늘의 루틴을 완료하셨습니다.')
+
+# 저장된 루틴 업데이트 및 자동 저장
+st.sidebar.subheader('저장된 루틴')
+if new_routine:
+    existing_routines.append(new_routine)
+
+routine_list.multiselect('기존 루틴', existing_routines)
+
+# 앱이 새로고침 되더라도 데이터는 보존되어야 함
+
