@@ -27,7 +27,7 @@ def load_data():
     try:
         with open(data_file, 'r') as f:
             data = json.load(f)
-            # 필수 카테고리 검증 및 초기화
+            # 필수 키 검증 및 초기화
             if 'in_progress' not in data:
                 data['in_progress'] = []
             if 'completed' not in data:
