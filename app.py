@@ -39,7 +39,22 @@ if st.button('추가'):
     else:
         st.warning("루틴을 입력하세요.")
 
-# 루틴 표시
+# 루틴 및 타이머 표시
 st.write("## 체크리스트:")
 for item in st.session_state.checklist:
     st.write(f"- {item}")
+
+# 1시간 타이머 표시
+st.write("## 타이머:")
+start_time = st.session_state.get('start_time', None)
+if st.button('타이머 시작'):
+    start_time = datetime.now()
+    st.session_state.start_time = start_time
+
+if start_time:
+    elapsed_time = datetime.now() - start_time
+    remaining_time = timedelta(hours=1) - elapsed_time
+    st.write(f"남은 시간: {remaining_time}")
+
+    if elapsed_time >= timedelta(hours=1):
+        st.warning("타이머가 완료되었습니다!")
