@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta
+import time  # time 모듈 임포트
 
 # 페이지 제목 및 설명을 HTML과 CSS로 스타일링
 st.markdown("""
@@ -94,6 +95,5 @@ else:
                 while datetime.now() < r['end_time']:
                     remaining_time = r['end_time'] - datetime.now()
                     st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
-                    time.sleep(1)
+                    time.sleep(1)  # time 모듈을 임포트하여 타이머 작동
                 st.write(f"{r['routine']} - 완료")
-
