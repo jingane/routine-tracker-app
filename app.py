@@ -61,8 +61,11 @@ def save_data(data):
 # 루틴 기록을 위한 데이터 초기화
 if 'routines' not in st.session_state:
     st.session_state.routines = load_data()
-    st.session_state.routines['in_progress'] = []
-    st.session_state.routines['completed'] = []
+
+    if 'in_progress' not in st.session_state.routines:
+        st.session_state.routines['in_progress'] = []
+    if 'completed' not in st.session_state.routines:
+        st.session_state.routines['completed'] = []
 
 # 새로운 루틴 입력
 routine = st.text_input('새 루틴을 입력하세요:')
@@ -109,4 +112,3 @@ for r in st.session_state.routines['completed']:
         st.experimental_rerun()  # 루틴 다시 시작 후 애플리케이션 다시 실행
     else:
         st.write(f"{r['routine']} - 완료")
-
