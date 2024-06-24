@@ -65,7 +65,7 @@ if not is_authenticated():
         else:
             st.error('아이디 또는 암호가 잘못되었습니다.')
 
-# 로그인 상태일 때 프로그램 작동
+# 로그인 상태일 때 프로그램 실행
 if is_authenticated():
     # 로그아웃 링크
     if st.button('로그아웃'):
