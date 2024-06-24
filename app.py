@@ -62,6 +62,7 @@ if st.button('시작'):
         st.session_state.routines.append({'routine': routine, 'end_time': end_time})
         save_data(st.session_state.routines)  # 데이터 저장
         st.success(f"'{routine}' 루틴이 시작되었습니다!")
+        st.experimental_rerun()  # 새로운 루틴 추가 후 애플리케이션 다시 실행
     elif routine in [r['routine'] for r in st.session_state.routines]:
         st.warning("이미 진행 중인 루틴입니다.")
     else:
@@ -75,7 +76,8 @@ for r in st.session_state.routines:
     if remaining_time.total_seconds() > 0:
         st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
     else:
-        st.write(f"{r['routine']} - 완료")
+        # 남은 시간이 없는 경우에는 아무것도 출력하지 않음
+        pass
 
         # 완료된 루틴 삭제
         st.session_state.routines.remove(r)
@@ -90,7 +92,7 @@ for r in st.session_state.routines:
             r['end_time'] = end_time
             save_data(st.session_state.routines)  # 데이터 업데이트
             st.success(f"'{r['routine']}' 루틴이 다시 시작되었습니다!")
-            st.experimental_rerun()
+            st.experimental_rerun()  # 루틴 다시 시작 후 애플리케이션 다시 실행
 
 # 루틴 타이머 업데이트 (실시간 업데이트는 Streamlit에서는 고급 기능이므로 대화형 애플리케이션으로 개발할 때 유용합니다)
 for r in st.session_state.routines:
