@@ -22,22 +22,23 @@ if st.button('시작'):
     else:
         st.warning("루틴을 입력하세요.")
 
-# 루틴 타이머 업데이트
-for r in st.session_state.routines:
-    if 'timer_placeholder' not in r:
-        r['timer_placeholder'] = st.empty()
-
-    remaining_time = r['end_time'] - datetime.now()
-    if remaining_time.total_seconds() > 0:
-        r['timer_placeholder'].write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
-    else:
-        r['timer_placeholder'].write(f"{r['routine']} - 완료")
-        if r['routine'] not in st.session_state.checklist:
-            st.session_state.checklist.append(r['routine'])
+# 화면 업데이트 함수 정의
+def update_routine_status():
+    st.write("## 루틴 상태:")
+    for r in st.session_state.routines:
+        remaining_time = r['end_time'] - datetime.now()
+        if remaining_time.total_seconds() > 0:
+            st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+        else:
+            st.write(f"{r['routine']} - 완료")
+            if r['routine'] not in st.session_state.checklist:
+                st.session_state.checklist.append(r['routine'])
 
 # 1초마다 화면 업데이트
-time.sleep(1)
-st.experimental_rerun()
+while True:
+    update_routine_status()
+    time.sleep(1)
+    st.experimental_rerun()
 
 # 진행 중인 루틴 표시
 st.write("## 진행 중인 루틴:")
