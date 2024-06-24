@@ -15,11 +15,6 @@ st.markdown("""
         font-size: 16px;
         color: #555;
     }
-    .routine-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
     </style>
     <h1 class="title">나만의 루틴 만들기</h1>
     <p class="subtitle">하루 1시간 루틴을 만들어 내 빈 시간을 꽉 채워볼까요~</p>
@@ -79,19 +74,12 @@ for r in st.session_state.routines:
     remaining_time = r['end_time'] - current_time
     if remaining_time.total_seconds() > 0:
         # 루틴과 함께 삭제 버튼 추가
-        st.markdown(f"### {r['routine']}")
-        st.write(f"남은 시간: {remaining_time}")
-
-        # 삭제 버튼을 루틴 옆에 배치
-        col1, col2 = st.columns([3, 1])  # 루틴에 대한 컬럼과 버튼에 대한 컬럼을 3:1 비율로 설정
-        with col1:
+        if st.button("삭제"):
+            st.session_state.routines.remove(r)
+            save_data(st.session_state.routines)  # 데이터 저장
+            st.experimental_rerun()  # 삭제 후 애플리케이션 다시 실행
+        else:
             st.write(f"{r['routine']}")
-
-        with col2:
-            if st.button("삭제"):
-                st.session_state.routines.remove(r)
-                save_data(st.session_state.routines)  # 데이터 저장
-                st.experimental_rerun()  # 삭제 후 애플리케이션 다시 실행
     else:
         # 남은 시간이 없는 경우에는 삭제 처리
         st.session_state.routines.remove(r)
