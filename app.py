@@ -1,79 +1,91 @@
+# app.py
+
 import streamlit as st
-from datetime import datetime, timedelta
-import json
+import datetime
 
-# 데이터를 파일에 저장할 경로
-DATA_FILE = 'routines.json'
+# 루틴 완료 기록을 저장할 리스트
+completed_routines = []
 
-# 페이지 제목 및 설명을 HTML과 CSS로 스타일링
-st.markdown("""
-    <style>
-    .title {
-        font-size: 28px;
-        font-weight: bold;
-        color: #4CAF50;
-    }
-    .subtitle {
-        font-size: 16px;
-        color: #555;
-    }
-    </style>
-    <h1 class="title">나만의 루틴 만들기</h1>
-    <p class="subtitle">하루 1시간 루틴을 만들어 내 빈 시간을 꽉 채워볼까요~</p>
-""", unsafe_allow_html=True)
+# CSS 스타일 정의
+css = """
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    padding: 20px;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+.button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.input-box {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+.checklist {
+    margin-top: 20px;
+}
+</style>
+"""
 
-# 데이터 로드 함수
-def load_data():
-    try:
-        with open(DATA_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
+# 페이지 레이아웃 설정
+st.markdown(css, unsafe_allow_html=True)
+st.title('루틴늘리기 앱')
+st.markdown('<div class="container">', unsafe_allow_html=True)
 
-# 데이터 저장 함수
-def save_data(data):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+# 새로운 루틴 입력 박스
+new_routine = st.text_input('새로운 루틴 입력', value='', max_chars=50, key='new_routine')
 
-# 루틴 기록을 위한 데이터 초기화 및 로드
-if 'routines' not in st.session_state:
-    st.session_state.routines = load_data()
+# 새로운 루틴 추가 버튼
+if st.button('루틴 추가', key='add_routine'):
+    if new_routine:
+        st.markdown(f'<p>새로운 루틴 추가됨: {new_routine}</p>', unsafe_allow_html=True)
 
-# 새로운 루틴 입력
-routine = st.text_input('새 루틴을 입력하세요:')
+# 루틴 완료 버튼
+if st.button('시작', key='start_routine'):
+    start_time = datetime.datetime.now()
+    end_time = start_time + datetime.timedelta(hours=1)
+    st.markdown(f'<p>루틴 시작됨: {start_time.strftime("%H:%M")} 에 시작, {end_time.strftime("%H:%M")} 에 종료 예정</p>', unsafe_allow_html=True)
 
-if st.button('시작'):
-    if routine and routine not in [r['routine'] for r in st.session_state.routines]:
-        end_time = datetime.now() + timedelta(hours=1)
-        st.session_state.routines.append({'routine': routine, 'end_time': end_time})
-        st.success(f"'{routine}' 루틴이 시작되었습니다!")
-        save_data(st.session_state.routines)  # 데이터 저장
-    elif routine in [r['routine'] for r in st.session_state.routines]:
-        st.warning("이미 진행 중인 루틴입니다.")
-    else:
-        st.warning("루틴을 입력하세요.")
+    # 1시간 후에 완료된 루틴 기록
+    completed_routines.append(new_routine)
+    st.markdown('<p><strong>완료된 루틴:</strong></p>', unsafe_allow_html=True)
+    st.markdown('<ul>', unsafe_allow_html=True)
+    for routine in completed_routines:
+        st.markdown(f'<li>{routine}</li>', unsafe_allow_html=True)
+    st.markdown('</ul>', unsafe_allow_html=True)
 
-# 진행 중인 루틴 표시 및 관리
-st.write("## 진행 중인 루틴:")
-current_time = datetime.now()
-for r in st.session_state.routines:
-    remaining_time = r['end_time'] - current_time
-    if remaining_time.total_seconds() > 0:
-        st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
-    else:
-        st.write(f"{r['routine']} - 완료")
-        st.session_state.routines.remove(r)
-        save_data(st.session_state.routines)  # 데이터 저장
+# 체크리스트
+st.markdown('<div class="checklist">', unsafe_allow_html=True)
+st.subheader('매일 잘하고 있는지 체크')
+for routine in completed_routines:
+    st.markdown(f'<p>- {routine}</p>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# 새로운 날에 다시 시작할 수 있는 버튼 추가
-st.write("## 다시 시작 가능한 루틴:")
-for r in st.session_state.routines:
-    if r['end_time'] <= current_time:
-        if st.button(f"{r['routine']} 다시 시작"):
-            end_time = datetime.now() + timedelta(hours=1)
-            st.session_state.routines.append({'routine': r['routine'], 'end_time': end_time})
-            st.success(f"'{r['routine']}' 루틴이 다시 시작되었습니다!")
-            save_data(st.session_state.routines)  # 데이터 저장
-            st.experimental_rerun()
-
-# 루틴 타이머 업데이트 (이 부분은 실시간 타이머를 표시하는 부분이므로 파일 저장과는 직접적인 관련이 없습니다)
+st.markdown('</div>', unsafe_allow_html=True)
