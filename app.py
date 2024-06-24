@@ -1,6 +1,5 @@
 import streamlit as st
 from datetime import datetime, timedelta
-import time
 import json
 import os
 
@@ -49,6 +48,9 @@ def logout():
     st.session_state.pop('authenticated', None)
     st.session_state.pop('username', None)
 
+    # 로그아웃 후 로그인 페이지로 리다이렉트
+    st.experimental_rerun()
+
 # 데이터 로드
 st.session_state.data = load_data()
 
@@ -70,36 +72,27 @@ if is_authenticated():
     # 로그아웃 링크
     if st.button('로그아웃'):
         logout()
-        st.info('로그아웃되었습니다.')
-
-    # 새로운 루틴 입력
-    routine = st.text_input('새 루틴을 입력하세요:')
-
-    if st.button('시작'):
-        if routine and routine not in [r['routine'] for r in st.session_state.data['routines']]:
-            end_time = datetime.now() + timedelta(hours=1)
-            st.session_state.data['routines'].append({'routine': routine, 'end_time': end_time})
-            st.success(f"'{routine}' 루틴이 시작되었습니다!")
-            save_data(st.session_state.data)
-        elif routine in [r['routine'] for r in st.session_state.data['routines']]:
-            st.warning("이미 진행 중인 루틴입니다.")
-        else:
-            st.warning("루틴을 입력하세요.")
-
-    # 진행 중인 루틴 표시 및 타이머 작동
-    st.write("## 진행 중인 루틴:")
-    current_time = datetime.now()
-    for r in st.session_state.data['routines']:
-        remaining_time = r['end_time'] - current_time
-        if remaining_time.total_seconds() > 0:
-            st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
-            st.write(f"### 타이머:")
-            st.progress((datetime.now() - current_time).total_seconds() / (r['end_time'] - current_time).total_seconds())
-            time.sleep(1)  # 타이머를 초당 업데이트하기 위해 1초 쉬기
-        else:
-            st.write(f"{r['routine']} - 완료")
-            st.session_state.data['routines'].remove(r)
-            save_data(st.session_state.data)
-
-    # 데이터 저장
-    save_data(st.session_state.data)
+    else:
+        # 새로운 루틴 입력
+        routine = st.text_input('새 루틴을 입력하세요:')
+    
+        if st.button('시작'):
+            if routine:
+                end_time = datetime.now() + timedelta(hours=1)
+                st.session_state.data['routines'].append({'routine': routine, 'end_time': end_time})
+                save_data(st.session_state.data)
+                st.success(f"'{routine}' 루틴이 시작되었습니다!")
+            else:
+                st.warning("루틴을 입력하세요.")
+    
+        # 진행 중인 루틴 표시 및 타이머 작동
+        st.write("## 진행 중인 루틴:")
+        current_time = datetime.now()
+        for r in st.session_state.data['routines']:
+            remaining_time = r['end_time'] - current_time
+            if remaining_time.total_seconds() > 0:
+                st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+            else:
+                st.write(f"{r['routine']} - 완료")
+                r['completed'] = True
+                save_data(st.session_state.data)
