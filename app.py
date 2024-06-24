@@ -49,8 +49,13 @@ def load_data():
 
 # 데이터 저장 함수
 def save_data(data):
+    def datetime_converter(o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+        raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
+
     with open(DATA_FILE, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, default=datetime_converter)
 
 # 초기 데이터 로드
 session_data = load_data()
