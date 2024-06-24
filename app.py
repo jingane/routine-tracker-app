@@ -1,58 +1,44 @@
 import streamlit as st
+from datetime import datetime, timedelta
 
-# Streamlit 앱
-def main():
-    st.title("루틴 늘리기 앱")
+# 페이지 제목 설정
+st.title('루틴 늘리기 앱')
 
-    # HTML과 CSS로 시계처럼 시간이 흐르는 효과 구현
-    st.components.v1.html("""
-    <div id="countdown">
-        <div id="timer">60:00</div>
-    </div>
-    <style>
-    #countdown {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 200px;
-        font-size: 48px;
-        font-weight: bold;
-        background-color: #f0f0f0;
-    }
-    #timer {
-        animation: countdown-animation 3600s linear;
-    }
-    @keyframes countdown-animation {
-        from { width: 100%; }
-        to { width: 0%; }
-    }
-    </style>
-    <script>
-    // JavaScript to update countdown timer
-    setInterval(updateTimer, 1000);
+# 루틴 입력 받기
+new_routine = st.text_input('새로운 루틴을 입력하세요.')
 
-    function updateTimer() {
-        var timerElement = document.getElementById("timer");
-        var timeLeft = parseFloat(timerElement.textContent);
-        if (timeLeft > 0) {
-            timeLeft -= 1;
-            var minutes = Math.floor(timeLeft / 60);
-            var seconds = Math.floor(timeLeft % 60);
-            timerElement.textContent = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
-        }
-    }
-    </script>
-    """)
+# 저장된 루틴들 표시
+st.write('### 저장된 루틴')
+saved_routines = st.text_area('저장된 루틴 목록', height=200)
+if saved_routines:
+    saved_routines_list = saved_routines.split('\n')
+else:
+    saved_routines_list = []
 
-    # 새로운 루틴 입력
-    new_routine = st.text_input("새로운 루틴을 입력하세요:")
-    if st.button("루틴 시작"):
-        st.write(f"루틴 시작: {new_routine}")
+# 새로운 루틴 추가
+if new_routine:
+    saved_routines_list.append(new_routine)
+    st.text_area('저장된 루틴 목록', '\n'.join(saved_routines_list), height=200)
 
-    # 기존 루틴 표시
-    st.write("기존 루틴:")
-    st.write("1. 루틴 1 완료")
-    st.write("2. 루틴 2 완료")
+# 시간 업데이트 함수
+def update_time():
+    return (datetime.now() + timedelta(hours=1)).strftime('%H:%M:%S')
 
-if __name__ == "__main__":
-    main()
+# 타이머
+st.write('### 루틴 타이머')
+time_remaining = st.empty()
+while True:
+    current_time = update_time()
+    time_remaining.text(f'남은 시간: {current_time}')
+    if current_time == '00:00:00':
+        break
+
+# 완료 메시지
+st.write('### 루틴 완료!')
+st.write('루틴을 성공적으로 완료했습니다.')
+
+# 하단의 빈칸
+st.write('### 새로운 루틴 추가하기')
+new_routine_text = st.text_input('새로운 루틴을 추가하세요.')
+
+# 앱의 자동 저장 기능을 구현해야 함
