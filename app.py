@@ -40,8 +40,14 @@ def logout():
 
 # 데이터 저장 함수
 def save_data(data):
-    # 실제 데이터 저장 로직 추가
-    pass
+    st.session_state.routines = data
+
+# 데이터 로드 함수
+def load_data():
+    return st.session_state.get('routines', [])
+
+# 초기 데이터 로드
+session_data = load_data()
 
 # 로그인 상태 확인
 if not is_authenticated():
@@ -59,18 +65,35 @@ else:
     if st.button('로그아웃'):
         logout()
     else:
-        # 새로운 루틴 입력
+        # 새 루틴 입력
         routine = st.text_input('새 루틴을 입력하세요:')
     
         if st.button('시작'):
             if routine:
                 end_time = datetime.now() + timedelta(hours=1)
-                # 여기에 데이터 저장 로직 추가
+                session_data.append({'routine': routine, 'end_time': end_time})
+                save_data(session_data)
                 st.success(f"'{routine}' 루틴이 시작되었습니다!")
+                st.experimental_rerun()
             else:
                 st.warning("루틴을 입력하세요.")
     
         # 진행 중인 루틴 표시 및 타이머 작동
         st.write("## 진행 중인 루틴:")
         current_time = datetime.now()
-        # 여기에 진행 중인 루틴 표시 및 타이머 작동 로직 추가
+        for r in session_data:
+            remaining_time = r['end_time'] - current_time
+            if remaining_time.total_seconds() > 0:
+                st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+            else:
+                st.write(f"{r['routine']} - 완료")
+
+        # 타이머 업데이트
+        for r in session_data:
+            if r['end_time'] > current_time:
+                while datetime.now() < r['end_time']:
+                    remaining_time = r['end_time'] - datetime.now()
+                    st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+                    time.sleep(1)
+                st.write(f"{r['routine']} - 완료")
+
