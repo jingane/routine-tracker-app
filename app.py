@@ -2,94 +2,79 @@ import streamlit as st
 from datetime import datetime, timedelta
 import time
 
-# 페이지 제목 및 설명을 HTML과 CSS로 스타일링
-st.markdown("""
-    <style>
-    .title {
-        font-size: 28px;
-        font-weight: bold;
-        color: #4CAF50;
-    }
-    .subtitle {
-        font-size: 16px;
-        color: #555;
-    }
-    </style>
-    <h1 class="title">나만의 루틴 만들기</h1>
-    <p class="subtitle">하루 1시간 루틴을 만들어 내 빈 시간을 꽉 채워볼까요~</p>
-""", unsafe_allow_html=True)
+# 루틴 기록 및 체크리스트를 위한 데이터 초기화
+if 'routines' not in st.session_state:
+    st.session_state.routines = []
 
-# 로그인 상태 확인 함수
-def is_authenticated():
-    return 'authenticated' in st.session_state and st.session_state.authenticated
+if 'checklist' not in st.session_state:
+    st.session_state.checklist = []
 
-# 로그인 함수
-def login(username, password):
-    # 예시로 고정된 아이디와 암호 설정
-    if username == 'admin' and password == '3323':
-        st.session_state.authenticated = True
-        st.session_state.username = username
-        return True
+# 새로운 루틴 입력
+routine = st.text_input('새 루틴을 입력하세요:')
+
+if st.button('시작'):
+    if routine and routine not in [r['routine'] for r in st.session_state.routines]:
+        end_time = datetime.now() + timedelta(hours=1)
+        st.session_state.routines.append({'routine': routine, 'end_time': end_time})
+        st.success(f"'{routine}' 루틴이 시작되었습니다!")
+    elif routine in [r['routine'] for r in st.session_state.routines]:
+        st.warning("이미 진행 중인 루틴입니다.")
     else:
-        return False
+        st.warning("루틴을 입력하세요.")
 
-# 로그아웃 함수
-def logout():
-    st.session_state.pop('authenticated', None)
-    st.session_state.pop('username', None)
-    st.experimental_rerun()
+# 진행 중인 루틴 표시
+st.write("## 진행 중인 루틴:")
+current_time = datetime.now()
+for r in st.session_state.routines:
+    remaining_time = r['end_time'] - current_time
+    if remaining_time.total_seconds() > 0:
+        st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+    else:
+        st.write(f"{r['routine']} - 완료")
+        if r['routine'] not in st.session_state.checklist:
+            st.session_state.checklist.append(r['routine'])
 
-# 데이터 저장 함수
-def save_data(data):
-    st.session_state.routines = data
+# 완료된 루틴 표시
+st.write("## 완료된 루틴:")
+for r in st.session_state.routines:
+    if r['end_time'] <= current_time:
+        st.write(f"{r['routine']} - 완료")
 
-# 데이터 로드 함수
-def load_data():
-    return st.session_state.get('routines', [])
+# 체크리스트 표시
+st.write("## 체크리스트:")
+for item in st.session_state.checklist:
+    st.write(f"- {item}")
 
-# 초기 데이터 로드
-session_data = load_data()
+# 새로운 루틴 추가 입력
+new_routine = st.text_input('새로운 루틴을 추가하세요:', key='new_routine')
 
-# 로그인 상태 확인
-if not is_authenticated():
-    username = st.text_input('아이디를 입력하세요:')
-    password = st.text_input('암호를 입력하세요:', type='password')
+if st.button('추가'):
+    if new_routine and new_routine not in st.session_state.checklist:
+        st.session_state.checklist.append(new_routine)
+        st.success(f"'{new_routine}' 루틴이 체크리스트에 추가되었습니다!")
+    elif new_routine in st.session_state.checklist:
+        st.warning("이미 체크리스트에 있는 루틴입니다.")
+    else:
+        st.warning("루틴을 입력하세요.")
 
-    if st.button('로그인'):
-        if login(username, password):
-            st.success('로그인 되었습니다. 잠시만 기다려주세요...')
+# 새로운 날에 다시 시작할 수 있는 버튼 추가
+st.write("## 다시 시작 가능한 루틴:")
+for r in st.session_state.routines:
+    if r['end_time'] <= current_time:
+        if st.button(f"{r['routine']} 다시 시작"):
+            end_time = datetime.now() + timedelta(hours=1)
+            st.session_state.routines.append({'routine': r['routine'], 'end_time': end_time})
+            st.success(f"'{r['routine']}' 루틴이 다시 시작되었습니다!")
             st.experimental_rerun()
-        else:
-            st.error('아이디 또는 암호가 잘못되었습니다.')
-else:
-    # 로그아웃 링크
-    if st.button('로그아웃'):
-        logout()
-    else:
-        # 새 루틴 입력
-        routine = st.text_input('새 루틴을 입력하세요:')
-    
-        if st.button('시작'):
-            if routine:
-                end_time = datetime.now() + timedelta(hours=1)
-                session_data.append({'routine': routine, 'end_time': end_time})
-                save_data(session_data)
-                st.success(f"'{routine}' 루틴이 시작되었습니다!")
-                st.experimental_rerun()
-            else:
-                st.warning("루틴을 입력하세요.")
-    
-        # 진행 중인 루틴 표시 및 타이머 작동
-        st.write("## 진행 중인 루틴:")
-        current_time = datetime.now()
-        for r in session_data:
-            remaining_time = r['end_time'] - current_time
-            if remaining_time.total_seconds() > 0:
-                st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}", key=r['routine'])
-            else:
-                st.write(f"{r['routine']} - 완료")
-        
-        # 실시간으로 시간 업데이트
-        st.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        time.sleep(1)
-        st.experimental_rerun()
+
+# 루틴 타이머 업데이트
+for r in st.session_state.routines:
+    if r['end_time'] > current_time:
+        timer_placeholder = st.empty()
+        while datetime.now() < r['end_time']:
+            remaining_time = r['end_time'] - datetime.now()
+            timer_placeholder.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+            time.sleep(1)
+        timer_placeholder.write(f"{r['routine']} - 완료")
+        if r['routine'] not in st.session_state.checklist:
+            st.session_state.checklist.append(r['routine'])
