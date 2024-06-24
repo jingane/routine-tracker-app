@@ -2,7 +2,6 @@ import streamlit as st
 import json
 from datetime import datetime, timedelta
 import time
-import os
 
 # 페이지 제목 및 설명을 HTML과 CSS로 스타일링
 st.markdown("""
@@ -74,7 +73,7 @@ current_time = datetime.now()
 for r in st.session_state.routines:
     remaining_time = r['end_time'] - current_time
     if remaining_time.total_seconds() > 0:
-        st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+        st.write(f"{r['routine']}")
     else:
         # 남은 시간이 없는 경우에는 아무것도 출력하지 않음
         pass
