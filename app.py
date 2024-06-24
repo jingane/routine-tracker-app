@@ -22,27 +22,11 @@ if st.button('시작'):
     else:
         st.warning("루틴을 입력하세요.")
 
-# 루틴 타이머 업데이트
-for r in st.session_state.routines:
-    if 'timer_placeholder' not in r:
-        r['timer_placeholder'] = st.empty()
-
-    remaining_time = r['end_time'] - datetime.now()
-    if remaining_time.total_seconds() > 0:
-        r['timer_placeholder'].write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
-    else:
-        r['timer_placeholder'].write(f"{r['routine']} - 완료")
-        if r['routine'] not in st.session_state.checklist:
-            st.session_state.checklist.append(r['routine'])
-
-# 1초마다 화면 업데이트
-time.sleep(1)
-st.experimental_rerun()
-
 # 진행 중인 루틴 표시
 st.write("## 진행 중인 루틴:")
+current_time = datetime.now()
 for r in st.session_state.routines:
-    remaining_time = r['end_time'] - datetime.now()
+    remaining_time = r['end_time'] - current_time
     if remaining_time.total_seconds() > 0:
         st.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
     else:
@@ -53,7 +37,7 @@ for r in st.session_state.routines:
 # 완료된 루틴 표시
 st.write("## 완료된 루틴:")
 for r in st.session_state.routines:
-    if r['end_time'] <= datetime.now():
+    if r['end_time'] <= current_time:
         st.write(f"{r['routine']} - 완료")
 
 # 체크리스트 표시
@@ -72,3 +56,15 @@ if st.button('추가'):
         st.warning("이미 체크리스트에 있는 루틴입니다.")
     else:
         st.warning("루틴을 입력하세요.")
+
+# 루틴 타이머 업데이트
+for r in st.session_state.routines:
+    if r['end_time'] > current_time:
+        timer_placeholder = st.empty()
+        while datetime.now() < r['end_time']:
+            remaining_time = r['end_time'] - datetime.now()
+            timer_placeholder.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+            time.sleep(1)
+        timer_placeholder.write(f"{r['routine']} - 완료")
+        if r['routine'] not in st.session_state.checklist:
+            st.session_state.checklist.append(r['routine'])
