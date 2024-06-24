@@ -1,48 +1,37 @@
 import streamlit as st
+from datetime import datetime, timedelta
 
-# Streamlit 앱의 제목과 설명
-st.title('루틴늘리기 앱')
-st.write('하나의 루틴을 설정하고 시작을 누르면 1시간 후에 루틴이 완료됩니다.')
+# 초기 데이터 초기화 (루틴 리스트)
+if 'routines' not in st.session_state:
+    st.session_state.routines = []
 
-# 사용자 입력을 받는 루틴 텍스트 상자
-new_routine = st.text_input('새로운 루틴 추가하기')
+# 현재 시간과 종료 시간 계산 함수
+def calculate_end_time(start_time):
+    start_datetime = datetime.strptime(start_time, '%H:%M:%S')
+    end_datetime = start_datetime + timedelta(hours=1)
+    return end_datetime.strftime('%H:%M:%S')
 
-# 선택된 루틴을 저장할 리스트
-existing_routines = st.sidebar.empty()
-selected_routines = existing_routines.multiselect('기존 루틴', ['운동하기', '공부하기', '독서하기'])
+# Streamlit 앱 시작
+def main():
+    st.title('루틴늘리기 앱')
 
-# 타이머 관련 초기 설정
-timer_running = False
-timer_seconds = 3600  # 1시간을 초로 설정
+    # 루틴 추가 섹션
+    st.header('새로운 루틴 추가')
+    new_routine = st.text_input('새로운 루틴을 입력하세요:')
+    if st.button('추가하기'):
+        st.session_state.routines.append(new_routine)
 
-# 타이머 함수
-def run_timer():
-    global timer_running, timer_seconds
-    timer_running = True
-    while timer_seconds > 0:
-        mins, secs = divmod(timer_seconds, 60)
-        timeformat = '{:02d}:{:02d}'.format(mins, secs)
-        st.header(timeformat)
-        timer_seconds -= 1
-        time.sleep(1)
-    st.header('루틴 완료!')
+    # 현재 루틴 리스트 보기
+    st.header('현재 루틴 리스트')
+    for i, routine in enumerate(st.session_state.routines, start=1):
+        st.write(f'{i}. {routine}')
 
-# 시작 버튼 처리
-start_button = st.button('시작')
+    # 타이머 섹션
+    st.header('루틴 타이머')
+    start_time = st.time_input('루틴 시작 시간을 입력하세요:', datetime.now().time())
+    if st.button('시작'):
+        end_time = calculate_end_time(start_time.strftime('%H:%M:%S'))
+        st.write(f'루틴 종료 시간: {end_time}')
 
-if start_button and not timer_running:
-    st.write(f'루틴 "{new_routine}" 시작!')
-    run_timer()
-
-# 저장된 루틴 업데이트 및 자동 저장
-st.sidebar.subheader('저장된 루틴')
-if new_routine:
-    selected_routines.append(new_routine)
-
-existing_routines.multiselect('기존 루틴', selected_routines)
-
-# 매일 잘하고 있는지 체크리스트
-st.subheader('매일 잘하고 있는지 체크리스트')
-if st.checkbox('오늘의 루틴을 완료했나요?'):
-    st.write('축하합니다! 오늘의 루틴을 완료하셨습니다.')
-
+if __name__ == '__main__':
+    main()
