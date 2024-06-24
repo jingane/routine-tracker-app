@@ -73,12 +73,15 @@ current_time = datetime.now()
 for r in st.session_state.routines:
     remaining_time = r['end_time'] - current_time
     if remaining_time.total_seconds() > 0:
-        st.write(f"{r['routine']}")
+        # 루틴과 함께 삭제 버튼 추가
+        if st.button(f"삭제 {r['routine']}"):
+            st.session_state.routines.remove(r)
+            save_data(st.session_state.routines)  # 데이터 저장
+            st.experimental_rerun()  # 삭제 후 애플리케이션 다시 실행
+        else:
+            st.write(f"{r['routine']}")
     else:
-        # 남은 시간이 없는 경우에는 아무것도 출력하지 않음
-        pass
-
-        # 완료된 루틴 삭제
+        # 남은 시간이 없는 경우에는 삭제 처리
         st.session_state.routines.remove(r)
         save_data(st.session_state.routines)  # 완료된 데이터 저장
 
