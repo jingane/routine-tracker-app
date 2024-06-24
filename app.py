@@ -74,11 +74,10 @@ for r in st.session_state.routines:
     remaining_time = r['end_time'] - current_time
     if remaining_time.total_seconds() > 0:
         # 루틴과 함께 삭제 버튼 추가
-      if st.button("삭제"):
-    st.session_state.routines.remove(r)
-    save_data(st.session_state.routines)  # 데이터 저장
-    st.experimental_rerun()  # 삭제 후 애플리케이션 다시 실행
-
+        if st.button("삭제"):
+            st.session_state.routines.remove(r)
+            save_data(st.session_state.routines)  # 데이터 저장
+            st.experimental_rerun()  # 삭제 후 애플리케이션 다시 실행
         else:
             st.write(f"{r['routine']}")
     else:
