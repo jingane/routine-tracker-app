@@ -38,10 +38,15 @@ for routine in routines:
     start_time = datetime.fromisoformat(routine["start_time"])
     time_elapsed = (datetime.now() - start_time).total_seconds()
     time_remaining = max(0, 3600 - time_elapsed)
-    
+
     if time_remaining > 0:
         st.write(f"루틴: {routine['name']}")
-        st.write(f"남은 시간: {format_time(time_remaining)}")
+        timer_placeholder = st.empty()
+
+        while time_remaining > 0:
+            time_remaining = max(0, 3600 - (datetime.now() - start_time).total_seconds())
+            timer_placeholder.text(f"남은 시간: {format_time(int(time_remaining))}")
+            time.sleep(1)
     else:
         routine["completed"] = True
 
