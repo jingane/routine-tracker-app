@@ -57,6 +57,16 @@ if st.button('추가'):
     else:
         st.warning("루틴을 입력하세요.")
 
+# 새로운 날에 다시 시작할 수 있는 버튼 추가
+st.write("## 다시 시작 가능한 루틴:")
+for r in st.session_state.routines:
+    if r['end_time'] <= current_time:
+        if st.button(f"{r['routine']} 다시 시작"):
+            end_time = datetime.now() + timedelta(hours=1)
+            st.session_state.routines.append({'routine': r['routine'], 'end_time': end_time})
+            st.success(f"'{r['routine']}' 루틴이 다시 시작되었습니다!")
+            st.experimental_rerun()
+
 # 루틴 타이머 업데이트
 for r in st.session_state.routines:
     if r['end_time'] > current_time:
