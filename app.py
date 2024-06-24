@@ -20,11 +20,11 @@ def save_data(data):
 def format_time(seconds):
     return str(timedelta(seconds=seconds))
 
+st.title("루틴 늘리기 앱")
+
 # 세션 상태 초기화
 if "routines" not in st.session_state:
     st.session_state.routines = load_data()
-
-st.title("루틴 늘리기 앱")
 
 # 루틴 입력 섹션
 new_routine = st.text_input("새 루틴 추가")
@@ -40,16 +40,16 @@ for routine in st.session_state.routines:
     start_time = datetime.fromisoformat(routine["start_time"])
     time_elapsed = (datetime.now() - start_time).total_seconds()
     time_remaining = max(0, 3600 - time_elapsed)
-    
+
     if time_remaining > 0:
         st.write(f"루틴: {routine['name']}")
         timer_placeholder = st.empty()
 
+        # 타이머 업데이트
         while time_remaining > 0:
             time_remaining = max(0, 3600 - (datetime.now() - start_time).total_seconds())
             timer_placeholder.text(f"남은 시간: {format_time(int(time_remaining))}")
             time.sleep(1)
-        routine["completed"] = True
     else:
         routine["completed"] = True
 
