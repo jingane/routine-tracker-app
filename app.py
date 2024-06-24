@@ -27,12 +27,14 @@ def main():
     # 현재 루틴 리스트 보기
     st.header('현재 루틴 리스트')
     for i, routine in enumerate(st.session_state.routines, start=1):
-        st.write(f'{i}. {routine.name} ({routine.duration.seconds // 60} 분)')
+        st.write(f'{i}. {routine.name} ({routine.duration.total_seconds() // 60} 분)')
 
         # 타이머 표시
         st.subheader('남은 시간:')
         if routine.remaining_time > timedelta(0):
-            st.write(f'{routine.remaining_time.seconds // 60} 분 {routine.remaining_time.seconds % 60} 초')
+            minutes = routine.remaining_time.seconds // 60
+            seconds = routine.remaining_time.seconds % 60
+            st.write(f'{minutes} 분 {seconds} 초')
 
     # 타이머 업데이트
     if st.session_state.routines:
