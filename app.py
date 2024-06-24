@@ -1,47 +1,35 @@
 import streamlit as st
-from datetime import timedelta
+import time
 
-# 초기 데이터 초기화 (루틴 리스트)
-if 'routines' not in st.session_state:
-    st.session_state.routines = []
+# 체크리스트
+checklist = []
 
-# 루틴 정보를 저장할 데이터 구조
-class Routine:
-    def __init__(self, name, duration_minutes):
-        self.name = name
-        self.duration = timedelta(minutes=duration_minutes)
-        self.remaining_time = self.duration
+# 시간 역순 카운트 다운 함수
+def countdown(timer):
+    while timer >= 0:
+        minutes, seconds = divmod(timer, 60)
+        time_str = f"{minutes:02}:{seconds:02}"
+        st.write(f"남은 시간: {time_str}")
+        time.sleep(1)
+        timer -= 1
 
-# Streamlit 앱 시작
+    st.write("루틴 완료!")
+    checklist.append("루틴 완료")  # 체크리스트 업데이트
+
+# Streamlit 앱
 def main():
-    st.title('루틴늘리기 앱')
+    st.title("루틴 늘리기 앱")
+    
+    # 새로운 루틴 입력
+    new_routine = st.text_input("새로운 루틴을 입력하세요:")
+    if st.button("루틴 시작"):
+        st.write(f"루틴 시작: {new_routine}")
+        countdown(3600)  # 1시간(3600초) 카운트 다운
+    
+    # 기존 루틴 표시
+    st.write("기존 루틴:")
+    for idx, item in enumerate(checklist):
+        st.write(f"{idx+1}. {item}")
 
-    # 루틴 추가 섹션
-    st.header('새로운 루틴 추가')
-    new_routine_name = st.text_input('새로운 루틴 이름을 입력하세요:')
-    new_routine_duration = st.slider('루틴 시간을 선택하세요 (분)', min_value=1, max_value=120, value=60, step=1)
-    if st.button('추가하기'):
-        new_routine = Routine(new_routine_name, new_routine_duration)
-        st.session_state.routines.append(new_routine)
-
-    # 현재 루틴 리스트 보기
-    st.header('현재 루틴 리스트')
-    for i, routine in enumerate(st.session_state.routines, start=1):
-        st.write(f'{i}. {routine.name} ({routine.duration.seconds // 60} 분)')
-
-        # 타이머 표시
-        st.subheader('남은 시간:')
-        if routine.remaining_time > timedelta(0):
-            minutes = routine.remaining_time.seconds // 60
-            seconds = routine.remaining_time.seconds % 60
-            st.write(f'{minutes} 분 {seconds} 초')
-
-    # 타이머 업데이트
-    if st.session_state.routines:
-        for routine in st.session_state.routines:
-            routine.remaining_time -= timedelta(seconds=1)
-            if routine.remaining_time < timedelta(0):
-                routine.remaining_time = timedelta(0)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
