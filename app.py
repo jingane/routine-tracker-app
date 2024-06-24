@@ -27,17 +27,10 @@ def load_data():
     try:
         with open(data_file, 'r') as f:
             data = json.load(f)
-            if 'in_progress' not in data:
-                data['in_progress'] = []
-            if 'completed' not in data:
-                data['completed'] = []
-
             # JSON에서 datetime 문자열을 datetime 객체로 변환
-            for r in data['in_progress']:
-                r['end_time'] = datetime.fromisoformat(r['end_time'])
-            for r in data['completed']:
-                r['end_time'] = datetime.fromisoformat(r['end_time'])
-
+            for category in ['in_progress', 'completed']:
+                for r in data.get(category, []):
+                    r['end_time'] = datetime.fromisoformat(r['end_time'])
             return data
     except (json.JSONDecodeError, FileNotFoundError):
         return {'in_progress': [], 'completed': []}
@@ -45,22 +38,14 @@ def load_data():
 # 데이터 저장 함수
 def save_data(data):
     # datetime 객체를 문자열로 변환하여 저장
-    data_to_save = {
-        'in_progress': [],
-        'completed': []
-    }
-    
-    for r in data['in_progress']:
-        data_to_save['in_progress'].append({
-            'routine': r['routine'],
-            'end_time': r['end_time'].isoformat()  # datetime 객체를 ISO 포맷 문자열로 변환
-        })
-    
-    for r in data['completed']:
-        data_to_save['completed'].append({
-            'routine': r['routine'],
-            'end_time': r['end_time'].isoformat()  # datetime 객체를 ISO 포맷 문자열로 변환
-        })
+    data_to_save = {}
+    for category in ['in_progress', 'completed']:
+        data_to_save[category] = []
+        for r in data.get(category, []):
+            data_to_save[category].append({
+                'routine': r['routine'],
+                'end_time': r['end_time'].isoformat()  # datetime 객체를 ISO 포맷 문자열로 변환
+            })
     
     with open(data_file, 'w') as f:
         json.dump(data_to_save, f, default=str)  # default=str을 사용하여 datetime을 문자열로 변환
