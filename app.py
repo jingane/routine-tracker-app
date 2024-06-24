@@ -24,19 +24,17 @@ st.markdown("""
 # 파일 경로 설정
 data_file = "routines.json"
 
-# 데이터 파일이 존재하는지 확인 후 초기화
-if not os.path.exists(data_file):
-    with open(data_file, 'w') as f:
-        json.dump([], f)
-
 # 데이터 로드 함수
 def load_data():
-    with open(data_file, 'r') as f:
-        data = json.load(f)
-        # JSON에서 datetime 문자열을 datetime 객체로 변환
-        for r in data:
-            r['end_time'] = datetime.fromisoformat(r['end_time'])
-        return data
+    try:
+        with open(data_file, 'r') as f:
+            data = json.load(f)
+            # JSON에서 datetime 문자열을 datetime 객체로 변환
+            for r in data:
+                r['end_time'] = datetime.fromisoformat(r['end_time'])
+            return data
+    except (json.JSONDecodeError, FileNotFoundError):
+        return []
 
 # 데이터 저장 함수
 def save_data(data):
