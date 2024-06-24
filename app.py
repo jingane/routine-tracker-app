@@ -2,6 +2,23 @@ import streamlit as st
 from datetime import datetime, timedelta
 import time
 
+# 페이지 제목 및 설명을 HTML과 CSS로 스타일링
+st.markdown("""
+    <style>
+    .title {
+        font-size: 36px;
+        font-weight: bold;
+        color: #4CAF50;
+    }
+    .subtitle {
+        font-size: 20px;
+        color: #555;
+    }
+    </style>
+    <h1 class="title">나만의 루틴 만들기</h1>
+    <p class="subtitle">하루 1시간 루틴을 만들어 내 빈 시간을 꽉 채워볼까요~</p>
+""", unsafe_allow_html=True)
+
 # 루틴 기록 및 체크리스트를 위한 데이터 초기화
 if 'routines' not in st.session_state:
     st.session_state.routines = []
@@ -33,6 +50,11 @@ for r in st.session_state.routines:
         st.write(f"{r['routine']} - 완료")
         if r['routine'] not in st.session_state.checklist:
             st.session_state.checklist.append(r['routine'])
+
+# 완료된 루틴이 있는 경우 새로운 루틴 입력 칸 초기화
+completed_routines = [r for r in st.session_state.routines if r['end_time'] <= current_time]
+if completed_routines:
+    routine = ''
 
 # 새로운 날에 다시 시작할 수 있는 버튼 추가
 st.write("## 다시 시작 가능한 루틴:")
