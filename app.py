@@ -57,7 +57,13 @@ for routine in st.session_state.routines:
 st.header("완료된 루틴")
 for routine in st.session_state.routines:
     if routine["completed"]:
-        st.write(f"루틴: {routine['name']} 완료")
+        if st.button(f"루틴: {routine['name']} 다시 시작"):
+            routine["start_time"] = datetime.now().isoformat()
+            routine["completed"] = False
+            save_data(st.session_state.routines)
+            st.experimental_rerun()
+        else:
+            st.write(f"루틴: {routine['name']} 완료")
 
 # 데이터 저장
 save_data(st.session_state.routines)
