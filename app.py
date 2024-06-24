@@ -65,7 +65,6 @@ for r in st.session_state.routines:
         timer_placeholder = st.empty()
         while datetime.now() < r['end_time']:
             remaining_time = r['end_time'] - datetime.now()
-            # 시간 표시 부분을 제거합니다.
-            # timer_placeholder.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
+            timer_placeholder.write(f"{r['routine']} - 남은 시간: {str(remaining_time).split('.')[0]}")
             time.sleep(1)
         timer_placeholder.write(f"{r['routine']} - 완료")
